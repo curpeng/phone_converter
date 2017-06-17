@@ -5,6 +5,7 @@ require 'pry'
 
 module PhoneConverter
   NUMBER_LENGTH = 10
+  WORD_MIN_LENGTH = 3
 
   MAP = {
     '2' => %w[a b c],
@@ -24,14 +25,11 @@ module PhoneConverter
       number = number.to_s
       validate(number)
 
-      dictionary = @dictionary.dup
-
-      number.chars.each_with_index do |digit, index|
-        appropriate_chars = MAP[digit].map(&:upcase)
-        dictionary = dictionary.select { |word| appropriate_chars.include?(word[index]) }
-      end
-
-      dictionary
+      alphabet = number.chars.map { |digit| MAP[digit].map(&:upcase) }
+      alphabet = alphabet.flatten.uniq
+      suggestions = (WORD_MIN_LENGTH..NUMBER_LENGTH).flat_map { |size| alphabet.combination(size).to_a }
+      suggestions.map!(&:join)
+      suggestions.select { |suggestion| word_exists?(suggestion) }
     end
 
     private
@@ -40,6 +38,10 @@ module PhoneConverter
       raise InvalidNumberError, 'number should contain 10 digits' if number.size < NUMBER_LENGTH
       raise InvalidNumberError, "number shouldn't contain digit '0'" if number.include?('0')
       raise InvalidNumberError, "number shouldn't contain digit '1'" if number.include?('1')
+    end
+
+    def word_exists?(suggestion)
+      !!@dictionary.bsearch { |word| suggestion <=> word }
     end
   end
 end
