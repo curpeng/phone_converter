@@ -52,20 +52,16 @@ module PhoneConverter
     end
 
     def word_exists?(suggestion)
-      !!@dictionary.bsearch { |word| suggestion <=> word }
-    end
-
-    def upcased_chars(digit)
-      MAP[digit].map(&:upcase)
+      !!@dictionary.bsearch { |word| suggestion.upcase <=> word }
     end
 
     def all_combinations(number)
-      initial_combinations = upcased_chars(number[0])
+      initial_combinations = MAP[number[0]]
       length = number.length
       digits = number[1..length].chars
 
       combinations = digits.inject(initial_combinations) do |variants, digit|
-        variants.product(upcased_chars(number[digit]))
+        variants.product(MAP[digit])
       end
 
       combinations.map { |c| c.flatten.join }
