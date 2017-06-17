@@ -37,7 +37,7 @@ describe PhoneConverter do
       end
 
       it 'converts number within 1000ms' do
-        expect(Benchmark.realtime do
+        expect(r = Benchmark.realtime do
           described_class.convert(number)
         end).to be < 1
       end

@@ -37,7 +37,7 @@ module PhoneConverter
         next if first_subnumber_words.empty?
 
         second_subnumber_words = words_for(second_subnumber)
-        next if second_subnumber_words.empty?    
+        next if second_subnumber_words.empty?
 
         words_combinations = first_subnumber_words.product(second_subnumber_words)
 
@@ -46,9 +46,7 @@ module PhoneConverter
 
       whole_number_words = words_for(number)
 
-      words = words.delete_if do |words|
-        whole_number_words.bsearch { |whole_word| (words[0] + words[1]) <=> whole_word }
-      end
+      words = words.delete_if { |words| whole_number_words.include? (words[0] + words[1]) }
 
       words + whole_number_words
     end
@@ -66,19 +64,20 @@ module PhoneConverter
     end
 
     def all_combinations(number)
-      initial_combinations = MAP[number[0]]
       length = number.length
       digits = number[1..length].chars
 
-      combinations = digits.inject(initial_combinations) do |variants, digit|
-        variants.product(MAP[digit])
+      combinations = MAP[number[0]]
+
+      digits.each do |digit|
+        combinations = combinations.product(MAP[digit]).map { |c| c.flatten(1).join }
       end
 
-      combinations.map { |c| c.flatten.join }
+      combinations
     end
 
     def words_for(number)
-      all_combinations(number).select { |combination| combination.length >= WORD_MIN_LENGTH && word_exists?(combination) }
+      all_combinations(number).select! { |combination| word_exists?(combination) }
     end
   end
 end
