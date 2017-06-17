@@ -25,11 +25,22 @@ module PhoneConverter
       number = number.to_s
       validate(number)
 
-      alphabet = number.chars.map { |digit| MAP[digit].map(&:upcase) }
-      alphabet = alphabet.flatten.uniq
-      suggestions = (WORD_MIN_LENGTH..NUMBER_LENGTH).flat_map { |size| alphabet.combination(size).to_a }
-      suggestions.map!(&:join)
-      suggestions.select { |suggestion| word_exists?(suggestion) }
+      words = []
+      separator_index = WORD_MIN_LENGTH - 1
+
+      while separator_index <= NUMBER_LENGTH - WORD_MIN_LENGTH
+        first_subnumber = number[0..separator_index]
+        second_subnumber = number[separator_index + 1..NUMBER_LENGTH]
+
+        first_subnumber_words = words_for(first_subnumber)
+        second_subnumber_words = words_for(second_subnumber)
+
+        words_combinations = first_subnumber_words.product(second_subnumber_words)
+        words << words_combinations unless words_combinations.empty?
+        separator_index += 1
+      end
+
+      words
     end
 
     private
@@ -42,6 +53,26 @@ module PhoneConverter
 
     def word_exists?(suggestion)
       !!@dictionary.bsearch { |word| suggestion <=> word }
+    end
+
+    def upcased_chars(digit)
+      MAP[digit].map(&:upcase)
+    end
+
+    def all_combinations(number)
+      initial_combinations = upcased_chars(number[0])
+      length = number.length
+      digits = number[1..length].chars
+
+      combinations = digits.inject(initial_combinations) do |variants, digit|
+        variants.product(upcased_chars(number[digit]))
+      end
+
+      combinations.map { |c| c.flatten.join }
+    end
+
+    def words_for(number)
+      all_combinations(number).select { |combination| combination.length >= WORD_MIN_LENGTH && word_exists?(combination) }
     end
   end
 end
