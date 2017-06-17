@@ -31,16 +31,26 @@ module PhoneConverter
       while separator_index <= NUMBER_LENGTH - WORD_MIN_LENGTH
         first_subnumber = number[0..separator_index]
         second_subnumber = number[separator_index + 1..NUMBER_LENGTH]
+        separator_index += 1
 
         first_subnumber_words = words_for(first_subnumber)
+        next if first_subnumber_words.empty?
+
         second_subnumber_words = words_for(second_subnumber)
+        next if second_subnumber_words.empty?    
 
         words_combinations = first_subnumber_words.product(second_subnumber_words)
-        words << words_combinations unless words_combinations.empty?
-        separator_index += 1
+
+        words += words_combinations
       end
 
-      words
+      whole_number_words = words_for(number)
+
+      words = words.delete_if do |words|
+        whole_number_words.bsearch { |whole_word| (words[0] + words[1]) <=> whole_word }
+      end
+
+      words + whole_number_words
     end
 
     private
