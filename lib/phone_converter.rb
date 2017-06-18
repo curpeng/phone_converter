@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'errors'
-require 'pry'
 
 module PhoneConverter
   NUMBER_LENGTH = 10
@@ -25,30 +24,15 @@ module PhoneConverter
       number = number.to_s
       validate(number)
 
-      words = []
-      separator_index = WORD_MIN_LENGTH - 1
-
-      while separator_index <= NUMBER_LENGTH - WORD_MIN_LENGTH
-        first_subnumber = number[0..separator_index]
-        second_subnumber = number[separator_index + 1..NUMBER_LENGTH]
-        separator_index += 1
-
-        first_subnumber_words = words_for(first_subnumber)
-        next if first_subnumber_words.empty?
-
-        second_subnumber_words = words_for(second_subnumber)
-        next if second_subnumber_words.empty?
-
-        words_combinations = first_subnumber_words.product(second_subnumber_words)
-
-        words += words_combinations
-      end
+      words_pairs = words_pairs_for(number)
 
       whole_number_words = words_for(number)
 
-      words = words.delete_if { |words| whole_number_words.include? (words[0] + words[1]) }
+      words_pairs = words_pairs.delete_if do |words_pair|
+        whole_number_words.include?(words_pair[0] + words_pair[1])
+      end
 
-      words + whole_number_words
+      words_pairs + whole_number_words
     end
 
     private
@@ -78,6 +62,30 @@ module PhoneConverter
 
     def words_for(number)
       all_combinations(number).select! { |combination| word_exists?(combination) }
+    end
+
+    def words_pairs_for(number)
+      words = []
+
+      separator_index = WORD_MIN_LENGTH - 1
+
+      while separator_index <= NUMBER_LENGTH - WORD_MIN_LENGTH
+        first_subnumber = number[0..separator_index]
+        second_subnumber = number[separator_index + 1..NUMBER_LENGTH]
+        separator_index += 1
+
+        first_subnumber_words = words_for(first_subnumber)
+        next if first_subnumber_words.empty?
+
+        second_subnumber_words = words_for(second_subnumber)
+        next if second_subnumber_words.empty?
+
+        words_combinations = first_subnumber_words.product(second_subnumber_words)
+
+        words += words_combinations
+      end
+
+      words
     end
   end
 end

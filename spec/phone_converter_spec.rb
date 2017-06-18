@@ -11,6 +11,12 @@ describe PhoneConverter do
         it 'should convert number to correct words' do
           expect(described_class.convert(number)).to match_array(result)
         end
+
+        it 'converts number within 1000ms' do
+          expect(Benchmark.realtime do
+            described_class.convert(number)
+          end).to be < 1
+        end
       end
 
       context 'number is 6686787825' do
@@ -34,12 +40,6 @@ describe PhoneConverter do
         end
 
         include_examples 'converts number correctly'
-      end
-
-      it 'converts number within 1000ms' do
-        expect(r = Benchmark.realtime do
-          described_class.convert(number)
-        end).to be < 1
       end
     end
 
