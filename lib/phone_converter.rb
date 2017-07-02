@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 require_relative 'errors'
 
 module PhoneConverter
@@ -48,13 +47,12 @@ module PhoneConverter
     end
 
     def all_combinations(number)
-      length = number.length
-      digits = number[1..length].chars
-
       combinations = MAP[number[0]]
 
-      digits.each do |digit|
-        combinations = combinations.product(MAP[digit]).map { |c| c.flatten(1).join }
+      number[1..-1].chars.each do |digit|
+        result = []
+        combinations.product(MAP[digit]) { |pair| result << pair.join }
+        combinations = result
       end
 
       combinations

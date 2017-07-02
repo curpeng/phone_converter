@@ -12,10 +12,10 @@ describe PhoneConverter do
           expect(described_class.convert(number)).to match_array(result)
         end
 
-        it 'converts number within 1000ms' do
+        it 'converts number within 750ms' do
           expect(Benchmark.realtime do
             described_class.convert(number)
-          end).to be < 1
+          end).to be < 0.75
         end
       end
 
